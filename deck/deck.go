@@ -1,5 +1,10 @@
 package deck
 
+import (
+	"fmt"
+	"strconv"
+)
+
 type Suit int
 
 func (s Suit) String() string {
@@ -17,6 +22,21 @@ func (s Suit) String() string {
 	}
 }
 
+func (s Suit) SuitToUnicode() string {
+	switch s {
+	case Spades:
+		return "♠"
+	case Hearts:
+		return "♥"
+	case Diamonds:
+		return "♦"
+	case Clubs:
+		return "♣"
+	default:
+		panic("Invalid card suit!")
+	}
+}
+
 const (
 	Spades Suit = iota
 	Hearts
@@ -27,6 +47,21 @@ const (
 type Card struct {
 	Suit  Suit
 	Value int
+}
+
+func (c Card) String() string {
+	value := strconv.Itoa(c.Value)
+	if value == "1" {
+		value = "ACE"
+	} else if value == "11" {
+		value = "J"
+	} else if value == "12" {
+		value = "Q"
+	} else if value == "13" {
+		value = "K"
+	}
+	// Internally the call is requesting for a string so it calls `.String()`
+	return fmt.Sprintf("%s of %s %s", value, c.Suit, c.Suit.SuitToUnicode())
 }
 
 func NewCard(s Suit, v int) Card {
