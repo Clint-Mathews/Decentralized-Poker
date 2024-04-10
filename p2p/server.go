@@ -62,13 +62,25 @@ func (s *Server) Start() {
 	s.acceptConnLoop()
 }
 
+func (s *Server) Connect(addr string) error {
+	conn, err := net.Dial("tcp", addr)
+	if err != nil {
+		return err
+	}
+	peer := &Peer{conn: conn}
+	s.addPeer <- peer
+
+	return peer.Send([]byte(s.Version + "\n"))
+}
+
+// TODO: Right now we have redundent code in registering new peers to the netwrok
+// Maybe construct a new peer and handshake protocol after registering a plain connection!
 func (s *Server) acceptConnLoop() {
 	for {
 		conn, err := s.listener.Accept()
 		if err != nil {
 			panic(err)
 		}
-
 		peer := &Peer{conn: conn}
 		s.addPeer <- peer
 

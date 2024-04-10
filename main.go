@@ -1,8 +1,11 @@
 package main
 
 import (
+	"fmt"
+	"time"
+
+	"github.com/Clint-Mathews/Decentralized-Poker/deck"
 	"github.com/Clint-Mathews/Decentralized-Poker/p2p"
-	server "github.com/Clint-Mathews/Decentralized-Poker/p2p"
 )
 
 func main() {
@@ -10,9 +13,21 @@ func main() {
 		Version:    "Decentralized Poker V1 Beta",
 		ListenAddr: ":4000",
 	}
-	server := server.NewServer(cfg)
+	server := p2p.NewServer(cfg)
+	go server.Start()
 
-	server.Start()
-	// d := deck.New()
-	// fmt.Println("Hello Poker game!, Deck:", d)
+	time.Sleep(1 * time.Second)
+
+	RemoteServerCfg := p2p.ServerConfig{
+		Version:    "Decentralized Poker V1 Beta",
+		ListenAddr: ":4001",
+	}
+	RemoteServer := p2p.NewServer(RemoteServerCfg)
+	go RemoteServer.Start()
+	if err := RemoteServer.Connect(":4000"); err != nil {
+		panic(err)
+	}
+
+	d := deck.New()
+	fmt.Println("Hello Poker game!, Deck:", d)
 }
