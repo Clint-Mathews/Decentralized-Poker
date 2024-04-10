@@ -61,7 +61,7 @@ func (c Card) String() string {
 		value = "K"
 	}
 	// Internally the call is requesting for a string so it calls `.String()`
-	return fmt.Sprintf("%s of %s %s", value, c.Suit, c.Suit.SuitToUnicode())
+	return fmt.Sprintf("%s of %s %s \n", value, c.Suit, c.Suit.SuitToUnicode())
 }
 
 func NewCard(s Suit, v int) Card {
@@ -72,4 +72,23 @@ func NewCard(s Suit, v int) Card {
 		Suit:  s,
 		Value: v,
 	}
+}
+
+type Deck [52]Card
+
+func New() Deck {
+	var (
+		nSuits = 4
+		nCards = 13
+		d      = [52]Card{}
+	)
+
+	x := 0
+	for i := 0; i < nSuits; i++ {
+		for j := 0; j < nCards; j++ {
+			d[x] = NewCard(Suit(i), j+1)
+			x += 1
+		}
+	}
+	return d
 }

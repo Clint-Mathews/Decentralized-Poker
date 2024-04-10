@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	card := deck.NewCard(deck.Spades, 1)
+	d := deck.New()
 
-	fmt.Println("Hello Poker game!, card: ", card)
+	fmt.Println("Hello Poker game!, \nDeck: \n", d)
 }
