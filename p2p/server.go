@@ -1,4 +1,4 @@
-package server
+package p2p
 
 import (
 	"fmt"
@@ -8,6 +8,11 @@ import (
 
 type Peer struct {
 	conn net.Conn
+}
+
+func (p *Peer) Send(b []byte) error {
+	_, err := p.conn.Write(b)
+	return err
 }
 
 type ServerConfig struct {
@@ -38,7 +43,9 @@ func (s *Server) Start() {
 		panic(err)
 	}
 
-	go s.acceptConnLoop()
+	fmt.Printf("Game server running in port: %s \n", s.ListenAddr)
+
+	s.acceptConnLoop()
 }
 
 func (s *Server) acceptConnLoop() {
@@ -47,6 +54,11 @@ func (s *Server) acceptConnLoop() {
 		if err != nil {
 			panic(err)
 		}
+
+		peer := &Peer{conn: conn}
+		s.addPeer <- peer
+
+		peer.Send([]byte("Decentralized Poker V1 Beta\n"))
 
 		go s.handleConn(conn)
 	}
@@ -79,7 +91,7 @@ func (s *Server) loop() {
 		select {
 		case peer := <-s.addPeer:
 			s.peers[peer.conn.RemoteAddr()] = peer
-			fmt.Printf("New Player connected %s", peer.conn.RemoteAddr())
+			fmt.Printf("New Player connected %s \n", peer.conn.RemoteAddr())
 		}
 	}
 }

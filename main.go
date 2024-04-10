@@ -1,12 +1,17 @@
 package main
 
 import (
-	"fmt"
-
-	"github.com/Clint-Mathews/Decentralized-Poker/deck"
+	"github.com/Clint-Mathews/Decentralized-Poker/p2p"
+	server "github.com/Clint-Mathews/Decentralized-Poker/p2p"
 )
 
 func main() {
-	d := deck.New()
-	fmt.Println("Hello Poker game!, Deck:", d)
+	cfg := p2p.ServerConfig{
+		ListenAddr: ":4000",
+	}
+	server := server.NewServer(cfg)
+
+	server.Start()
+	// d := deck.New()
+	// fmt.Println("Hello Poker game!, Deck:", d)
 }
