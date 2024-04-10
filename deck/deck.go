@@ -2,6 +2,7 @@ package deck
 
 import (
 	"fmt"
+	"math/rand"
 	"strconv"
 )
 
@@ -61,7 +62,7 @@ func (c Card) String() string {
 		value = "K"
 	}
 	// Internally the call is requesting for a string so it calls `.String()`
-	return fmt.Sprintf("%s of %s %s \n", value, c.Suit, c.Suit.SuitToUnicode())
+	return fmt.Sprintf("%s of %s %s ", value, c.Suit, c.Suit.SuitToUnicode())
 }
 
 func NewCard(s Suit, v int) Card {
@@ -88,6 +89,16 @@ func New() Deck {
 		for j := 0; j < nCards; j++ {
 			d[x] = NewCard(Suit(i), j+1)
 			x += 1
+		}
+	}
+	return Shuffle(d)
+}
+
+func Shuffle(d Deck) Deck {
+	for i := 0; i < len(d); i++ {
+		r := rand.Intn(i + 1)
+		if r != i {
+			d[i], d[r] = d[r], d[i]
 		}
 	}
 	return d

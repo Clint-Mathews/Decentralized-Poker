@@ -8,6 +8,5 @@ import (
 
 func main() {
 	d := deck.New()
-
-	fmt.Println("Hello Poker game!, \nDeck: \n", d)
+	fmt.Println("Hello Poker game!, Deck:", d)
 }
