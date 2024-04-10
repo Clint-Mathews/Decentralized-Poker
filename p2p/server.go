@@ -1,7 +1,9 @@
 package p2p
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"net"
 	"sync"
 )
@@ -17,15 +19,24 @@ func (p *Peer) Send(b []byte) error {
 
 type ServerConfig struct {
 	ListenAddr string
+	Version    string
+}
+
+type Message struct {
+	Payload io.Reader
+	From    net.Addr
 }
 
 type Server struct {
 	ServerConfig
 
 	listener net.Listener
+	handler  Handler
 	mu       sync.Mutex
 	peers    map[net.Addr]*Peer
 	addPeer  chan *Peer
+	delPeer  chan *Peer
+	msgCh    chan *Message
 }
 
 func NewServer(cfg ServerConfig) *Server {
@@ -33,6 +44,9 @@ func NewServer(cfg ServerConfig) *Server {
 		ServerConfig: cfg,
 		peers:        make(map[net.Addr]*Peer),
 		addPeer:      make(chan *Peer),
+		delPeer:      make(chan *Peer),
+		handler:      &DefaultHandler{},
+		msgCh:        make(chan *Message),
 	}
 }
 
@@ -58,21 +72,28 @@ func (s *Server) acceptConnLoop() {
 		peer := &Peer{conn: conn}
 		s.addPeer <- peer
 
-		peer.Send([]byte("Decentralized Poker V1 Beta\n"))
+		peer.Send([]byte(s.Version + "\n"))
 
-		go s.handleConn(conn)
+		go s.handleConn(peer)
 	}
 }
 
-func (s *Server) handleConn(conn net.Conn) {
+func (s *Server) handleConn(peer *Peer) {
 	buf := make([]byte, 1024)
 	for {
-		n, err := conn.Read(buf)
+		n, err := peer.conn.Read(buf)
 		if err != nil {
-			continue
+			break
+		}
+
+		s.msgCh <- &Message{
+			From:    peer.conn.RemoteAddr(),
+			Payload: bytes.NewReader(buf[:n]),
 		}
 		fmt.Println(string(buf[:n]))
 	}
+
+	s.delPeer <- peer
 }
 
 func (s *Server) listen() error {
@@ -89,9 +110,18 @@ func (s *Server) listen() error {
 func (s *Server) loop() {
 	for {
 		select {
+		case peer := <-s.delPeer:
+			delete(s.peers, peer.conn.RemoteAddr())
+			fmt.Printf("Player Disconnected %s \n", peer.conn.RemoteAddr())
+
 		case peer := <-s.addPeer:
 			s.peers[peer.conn.RemoteAddr()] = peer
-			fmt.Printf("New Player connected %s \n", peer.conn.RemoteAddr())
+			fmt.Printf("New Player Connected %s \n", peer.conn.RemoteAddr())
+
+		case msg := <-s.msgCh:
+			if err := s.handler.HandleMessage(msg); err != nil {
+				panic(err)
+			}
 		}
 	}
 }

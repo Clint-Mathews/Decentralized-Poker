@@ -7,6 +7,7 @@ import (
 
 func main() {
 	cfg := p2p.ServerConfig{
+		Version:    "Decentralized Poker V1 Beta",
 		ListenAddr: ":4000",
 	}
 	server := server.NewServer(cfg)
