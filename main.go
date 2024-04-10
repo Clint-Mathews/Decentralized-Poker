@@ -1,7 +1,13 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/Clint-Mathews/Decentralized-Poker/deck"
+)
 
 func main() {
-	fmt.Println("Hello Poker game!")
+	card := deck.NewCard(deck.Spades, 1)
+
+	fmt.Println("Hello Poker game!, card: ", card)
 }
